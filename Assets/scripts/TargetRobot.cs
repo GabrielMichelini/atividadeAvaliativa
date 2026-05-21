@@ -2,15 +2,17 @@ using UnityEngine;
 
 public class TargetRobot : MonoBehaviour
 {
-    public float health = 100f; // Vida total do robô
+    [Header("Atributos")]
+    public float health = 100f;
 
-    // Função que recebe o dano do tiro
+    [Header("Efeitos")]
+    public GameObject explosaoPrefab; // O espaço para o efeito que criamos
+
     public void TakeDamage(float amount)
     {
         health -= amount;
-        Debug.Log("Acertou! Vida do robô: " + health);
+        Debug.Log("Acertou o robô! Vida restante: " + health);
 
-        // Se a vida zerar, ele morre
         if (health <= 0f)
         {
             Die();
@@ -19,7 +21,18 @@ public class TargetRobot : MonoBehaviour
 
     void Die()
     {
+        // 1. Cria a explosão na exata posição (transform.position) onde o robô está
+        if (explosaoPrefab != null)
+        {
+            GameObject efeito = Instantiate(explosaoPrefab, transform.position, transform.rotation);
+            
+            // Destrói as partículas da memória depois de 2 segundos para não pesar o jogo
+            Destroy(efeito, 2f); 
+        }
+
         Debug.Log("Robô Destruído!");
-        Destroy(gameObject); // Apaga o robô da cena
+        
+        // 2. Faz o robô sumir
+        Destroy(gameObject); 
     }
 }
