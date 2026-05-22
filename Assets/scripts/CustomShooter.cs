@@ -3,10 +3,15 @@ using UnityEngine.InputSystem;
 
 public class CustomShooter : MonoBehaviour
 {
+    [Header("Controle de Estado")]
+    public bool canShoot = true; 
+    public bool gastaMunicao = false; // Começa desligado (munição infinita)
+    public int currentAmmo = 30;
+
     [Header("Configurações do Projétil")]
-    public GameObject bulletPrefab; // O prefab azul da bala
-    public Transform firePoint;     // O cano da arma
-    public float bulletSpeed = 50f; // Velocidade do tiro
+    public GameObject bulletPrefab; 
+    public Transform firePoint;     
+    public float bulletSpeed = 50f; 
 
     [Header("Referências")]
     public Animator blasterAnimator;
@@ -14,7 +19,10 @@ public class CustomShooter : MonoBehaviour
 
     void Update()
     {
-        if (Mouse.current.leftButton.wasPressedThisFrame)
+        // Só deixa atirar se não estiver gastando bala, OU se ainda tiver bala no pente
+        bool temBala = !gastaMunicao || currentAmmo > 0;
+
+        if (canShoot && temBala && Mouse.current.leftButton.wasPressedThisFrame)
         {
             Shoot();
         }
@@ -22,6 +30,12 @@ public class CustomShooter : MonoBehaviour
 
     void Shoot()
     {
+        // Se estiver no minigame, consome 1 bala
+        if (gastaMunicao)
+        {
+            currentAmmo--;
+        }
+
         if (somDeTiro != null) somDeTiro.Play();
 
         if (blasterAnimator != null)
@@ -30,18 +44,11 @@ public class CustomShooter : MonoBehaviour
             blasterAnimator.SetTrigger("Fire"); 
         }
 
-        // NOVO: Cria a bala física e empurra ela para a frente
         if (bulletPrefab != null && firePoint != null)
         {
-            // Cria a bala na posição e rotação do cano da arma
             GameObject bullet = Instantiate(bulletPrefab, firePoint.position, firePoint.rotation);
-            
-            // Pega o Rigidbody da bala criada e aplica velocidade
             Rigidbody rb = bullet.GetComponent<Rigidbody>();
-            if (rb != null)
-            {
-                rb.velocity = firePoint.forward * bulletSpeed;
-            }
+            if (rb != null) rb.velocity = firePoint.forward * bulletSpeed;
         }
     }
 }
