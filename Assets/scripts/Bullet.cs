@@ -3,25 +3,21 @@ using UnityEngine;
 public class Bullet : MonoBehaviour
 {
     public float damage = 25f;
-    public float lifeTime = 3f; // Tempo para a bala sumir se não acertar nada
+    public float lifeTime = 3f; 
 
-    void Start()
-    {
-        // Se a bala se perder no mapa, ela se destrói sozinha após 3 segundos
-        Destroy(gameObject, lifeTime);
-    }
+    void Start() { Destroy(gameObject, lifeTime); }
 
     void OnCollisionEnter(Collision collision)
     {
-        // Verifica se o objeto em que a bala bateu tem o script do Robô
+        // 1. Tenta achar um Robô para dar dano
         TargetRobot robot = collision.gameObject.GetComponent<TargetRobot>();
-        
-        if (robot != null)
-        {
-            robot.TakeDamage(damage);
-        }
+        if (robot != null) robot.TakeDamage(damage);
 
-        // Destrói a bala imediatamente após bater em qualquer coisa (robô, parede ou chão)
+        // 2. NOVO: Tenta achar um Item para coletar
+        PickupItem item = collision.gameObject.GetComponent<PickupItem>();
+        if (item != null) item.Coletar();
+        
+        // Destrói a bala de qualquer jeito ao bater em algo
         Destroy(gameObject);
     }
 }
