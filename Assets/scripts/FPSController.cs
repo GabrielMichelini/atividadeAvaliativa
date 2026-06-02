@@ -3,14 +3,9 @@ using UnityEngine.InputSystem;
 
 public class FPSController : MonoBehaviour
 {
-    [Header("Controle de Estado")]
-    public bool canMove = true; // Permite ao Hangar ligar/desligar o andar
-
-    [Header("Movimentação")]
+    public bool canMove = true; 
     public CharacterController controller;
     public float speed = 8f;
-
-    [Header("Câmera")]
     public Camera playerCamera;
     public float mouseSensitivity = 0.5f; 
     private float xRotation = 0f;
@@ -23,7 +18,9 @@ public class FPSController : MonoBehaviour
 
     void Update()
     {
-        // --- VISÃO (Sempre ativa para mirar) ---
+        // Se pausado, não vira a câmera nem anda
+        if (Time.timeScale == 0f) return; 
+
         float mouseX = Mouse.current.delta.x.ReadValue() * mouseSensitivity;
         float mouseY = Mouse.current.delta.y.ReadValue() * mouseSensitivity;
 
@@ -33,7 +30,6 @@ public class FPSController : MonoBehaviour
         playerCamera.transform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
         transform.Rotate(Vector3.up * mouseX);
 
-        // --- ANDAR (Trava quando o minigame começa) ---
         if (canMove)
         {
             float x = 0f; float z = 0f;

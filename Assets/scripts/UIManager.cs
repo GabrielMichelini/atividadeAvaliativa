@@ -1,28 +1,105 @@
 using UnityEngine;
 using TMPro;
+using UnityEngine.UI;
+using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement; 
 
 public class UIManager : MonoBehaviour
 {
-    // Isso permite que qualquer outro script ache o UIManager sem precisarmos arrastar nada!
     public static UIManager instance;
 
     [Header("Telas")]
-    public GameObject painelHUD; // Um objeto vazio dentro do Canvas que guarda os textos de jogo
-    public GameObject gameOverTexto; // O texto de Fim de Jogo
+    public GameObject painelHUD; 
+    public GameObject gameOverTexto; 
+    public GameObject painelPausa; 
 
     [Header("Textos")]
     public TextMeshProUGUI scoreText;
     public TextMeshProUGUI ammoTimerText;
+    public TextMeshProUGUI valorSensibilidadeTexto; 
+
+    [Header("Configurações")]
+    public Slider sliderSensibilidade;
+    public FPSController playerMove; 
 
     private int score = 0;
+    private bool jogoPausado = false;
 
     void Awake() 
     { 
         instance = this; 
-        
-        // Esconde a interface quando o jogo começa
         painelHUD.SetActive(false);
         gameOverTexto.SetActive(false);
+        painelPausa.SetActive(false); 
+    }
+
+    void Start()
+    {
+        if (sliderSensibilidade != null && playerMove != null)
+        {
+            // Tenta puxar a sensibilidade salva na memória. 
+            // Se for a primeira vez jogando, ele usa a sensibilidade padrão do personagem.
+            float sensibilidadeSalva = PlayerPrefs.GetFloat("MinhaSensibilidade", playerMove.mouseSensitivity);
+            
+            // Aplica a sensibilidade salva no personagem e no Slider
+            playerMove.mouseSensitivity = sensibilidadeSalva;
+            sliderSensibilidade.value = sensibilidadeSalva;
+            
+            if (valorSensibilidadeTexto != null) 
+            {
+                valorSensibilidadeTexto.text = sensibilidadeSalva.ToString("F1");
+            }
+        }
+    }
+
+    void Update()
+    {
+        if (Keyboard.current.escapeKey.wasPressedThisFrame)
+        {
+            AlternarPausa();
+        }
+    }
+
+    public void AlternarPausa()
+    {
+        jogoPausado = !jogoPausado;
+        painelPausa.SetActive(jogoPausado);
+
+        if (jogoPausado)
+        {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+            Time.timeScale = 0f; 
+        }
+        else
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+            Time.timeScale = 1f;
+        }
+    }
+
+    public void MudarSensibilidade(float novoValor)
+    {
+        if (playerMove != null)
+        {
+            playerMove.mouseSensitivity = novoValor;
+        }
+        
+        if (valorSensibilidadeTexto != null)
+        {
+            valorSensibilidadeTexto.text = novoValor.ToString("F1");
+        }
+
+        // Toda vez que você mexe na barra, ele salva o novo valor na memória!
+        PlayerPrefs.SetFloat("MinhaSensibilidade", novoValor);
+        PlayerPrefs.Save();
+    }
+
+    public void ReiniciarJogo()
+    {
+        Time.timeScale = 1f; 
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
     public void IniciarHUD()
@@ -40,7 +117,6 @@ public class UIManager : MonoBehaviour
 
     public void AtualizarAmmoTimer(int ammo, float time)
     {
-        // Garante que o relógio não mostre números negativos
         int tempoArredondado = Mathf.Max(0, Mathf.RoundToInt(time));
         ammoTimerText.text = "Munição: " + ammo + " | Tempo: " + tempoArredondado + "s";
     }
@@ -48,5 +124,7 @@ public class UIManager : MonoBehaviour
     public void MostrarGameOver()
     {
         gameOverTexto.SetActive(true);
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
     }
 }

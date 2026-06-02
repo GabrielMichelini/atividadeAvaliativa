@@ -3,6 +3,7 @@ using UnityEngine;
 public class TargetRobot : MonoBehaviour
 {
     public float health = 100f;
+    public int pointsValue = 10; // Nova variável que será alterada pelo Spawner
     public GameObject explosaoPrefab;
 
     public void TakeDamage(float amount)
@@ -13,10 +14,10 @@ public class TargetRobot : MonoBehaviour
 
     void Die()
     {
-        // Avisa o UIManager central para somar 10 pontos na conta!
+        // Envia a pontuação customizada em vez de enviar sempre 10
         if (UIManager.instance != null)
         {
-            UIManager.instance.AtualizarScore(10);
+            UIManager.instance.AtualizarScore(pointsValue);
         }
 
         if (explosaoPrefab != null)
